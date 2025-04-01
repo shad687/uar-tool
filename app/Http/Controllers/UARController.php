@@ -100,58 +100,54 @@ class UARController extends Controller
     {
         $userId = auth()->id();
         $organizationCode = auth()->user()->organization_code;
-        
+
         // Fetch all UARs for the organization (Active UARs)
-        $uars = UAR::where('organization_code', $organizationCode)->get(); 
-    
+        $uars = UAR::where('organization_code', $organizationCode)->get();
+
         //dd($upcomingUARs);
         // Fetch only upcoming UARs where the user is involved
         $upcomingUARs = UAR::where('organization_code', $organizationCode)
             ->where(function ($query) use ($userId) {
-            $query->where('app_owner_id', $userId)
-                  ->orWhere('primary_reviewer_id', $userId)
-                  ->orWhere('secondary_reviewer_id', $userId);
+                $query->where('app_owner_id', $userId)
+                    ->orWhere('primary_reviewer_id', $userId)
+                    ->orWhere('secondary_reviewer_id', $userId);
             })
             ->whereBetween('next_due', [now()->subDays(30), now()->addDays(30)])
             ->orderBy('next_due', 'asc')
             ->get();
-            
-        
         return view('dashboard', compact('uars', 'upcomingUARs'));
     }
-   public function showUpcoming($id)
-{
-    $uar = UAR::with(['files', 'users'])->findOrFail($id); // Load users here
-    $userId = auth()->id();
 
-    if ($uar->app_owner_id == $userId) {
-        return view('uar.upload', compact('uar'));
-    } elseif ($uar->primary_reviewer_id == $userId || $uar->secondary_reviewer_id == $userId) {
-        if ($uar->files && $uar->files->isNotEmpty()) {
-            return view('uar.review', compact('uar'));
-        } else {
-            return view('uar.awaiting', compact('uar'));
+    public function showUpcoming($id)
+    {
+        $uar = UAR::with(['files', 'users'])->findOrFail($id); // Load users here
+        $userId = auth()->id();
+
+        if ($uar->app_owner_id == $userId) {
+            return view('uar.upload', compact('uar'));
+        } elseif ($uar->primary_reviewer_id == $userId || $uar->secondary_reviewer_id == $userId) {
+            if ($uar->files && $uar->files->isNotEmpty()) {
+                return view('uar.review', compact('uar'));
+            } else {
+                return view('uar.awaiting', compact('uar'));
+            }
         }
-    }
-
-    abort(403, 'Unauthorized action.');
-}
-
-
-
-    public function destroy($id)
-{
-    $uar = UAR::findOrFail($id);
-
-    // Ensure the user is authorized to delete this UAR (same organization)
-    if ($uar->organization_code !== auth()->user()->organization_code) {
         abort(403, 'Unauthorized action.');
     }
 
-    $uar->delete();
+    public function destroy($id)
+    {
+        $uar = UAR::findOrFail($id);
 
-    return redirect()->route('dashboard')->with('success', 'UAR deleted successfully!');
-}
+        // Ensure the user is authorized to delete this UAR (same organization)
+        if ($uar->organization_code !== auth()->user()->organization_code) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $uar->delete();
+
+        return redirect()->route('dashboard')->with('success', 'UAR deleted successfully!');
+    }
 
 
     // Function to calculate next_due
@@ -171,33 +167,33 @@ class UARController extends Controller
         }
     }
 
-//not in use below function, we are using function in UARFIleController
+    //not in use below function, we are using function in UARFIleController
     public function upload(Request $request, $id)
-{
-    $uar = UAR::findOrFail($id);
+    {
+        $uar = UAR::findOrFail($id);
 
-    // Validate file uploads
-    $request->validate([
-        'user_list' => 'required|mimes:xls,xlsx,csv',
-        'screenshot' => 'required|mimes:pdf,jpg,jpeg,png,docx',
-    ]);
+        // Validate file uploads
+        $request->validate([
+            'user_list' => 'required|mimes:xls,xlsx,csv',
+            'screenshot' => 'required|mimes:pdf,jpg,jpeg,png,docx',
+        ]);
 
-    // Store files
-    $userListPath = $request->file('user_list')->store('uploads/user_lists');
-    $screenshotPath = $request->file('screenshot')->store('uploads/screenshots');
+        // Store files
+        $userListPath = $request->file('user_list')->store('uploads/user_lists');
+        $screenshotPath = $request->file('screenshot')->store('uploads/screenshots');
 
-    // Save file paths to the UARFiles table
-    UARFile::create([
-        'uar_id' => $uar->id,
-        'user_list' => $userListPath,
-        'screenshot' => $screenshotPath,
-    ]);
+        // Save file paths to the UARFiles table
+        UARFile::create([
+            'uar_id' => $uar->id,
+            'user_list' => $userListPath,
+            'screenshot' => $screenshotPath,
+        ]);
 
-    if ($userListPath && $screenshotPath) {
-        return redirect()->route('dashboard')->with('success', 'Files uploaded successfully.');
-    } else {
-        return redirect()->back()->with('error', 'File upload failed. Please try again.');
+        if ($userListPath && $screenshotPath) {
+            return redirect()->route('dashboard')->with('success', 'Files uploaded successfully.');
+        } else {
+            return redirect()->back()->with('error', 'File upload failed. Please try again.');
+        }
+
     }
-
-}
 }

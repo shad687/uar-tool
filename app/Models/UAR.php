@@ -45,13 +45,13 @@ class UAR extends Model
     }
 
     public function files()
-{
-    return $this->hasMany(UARFile::class, 'uar_id');
-}
+    {
+        return $this->hasMany(UARFile::class, 'uar_id');
+    }
 
-public function users()
-{
-    return $this->hasMany(UARUser::class, 'uar_id');
-}
+    public function users()
+    {
+        return $this->hasMany(UARUser::class, 'uar_id');
+    }
 
 }

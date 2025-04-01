@@ -32,8 +32,7 @@ Route::delete('/uar/{id}', [UARController::class, 'destroy'])->name('uar.destroy
 Route::post('/uar/{id}/upload', [UARFileController::class, 'upload'])->name('uar.upload');
 Route::get('/uar/{id}/review', [UARUserController::class, 'show'])->name('uar.review');
 Route::post('/uar/user/{id}/approve', [UARUserController::class, 'approve'])->name('uar.approve');
-
-
-
+Route::post('/uar/user/{id}/reject', [UARUserController::class, 'reject'])->name('uar.reject');
+Route::post('/uar/user/{id}/approveall', [UARUserController::class, 'approveAll'])->name('uar.approveAll');
 
 require __DIR__.'/auth.php';

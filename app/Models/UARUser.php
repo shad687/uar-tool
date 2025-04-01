@@ -16,4 +16,6 @@ class UARUser extends Model
         'user_data' => 'array', // Automatically cast JSON to array
         'reviewed_at' => 'datetime',
     ];
+
+   
 }
