@@ -22,7 +22,6 @@ class User extends Authenticatable
         'email',
         'password',
         'organization_code',
-        'is_admin', // Added is_admin attribute
     ];
 
     /**
@@ -47,8 +46,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function isAdmin()
-{
-    return $this->is_admin;
-}
 }
