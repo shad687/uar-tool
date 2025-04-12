@@ -9,6 +9,11 @@ use App\Models\UARFile;
 class UAR extends Model
 {
     use HasFactory;
+    const STATUS_PENDING = 'pending';
+    const STATUS_PRIMARY_REVIEW = 'primary_review';
+    const STATUS_SECONDARY_REVIEW = 'secondary_review';
+    const STATUS_REJECTED_USERS = 'rejected_users';
+    const STATUS_COMPLETED = 'completed';
 
 
 
@@ -22,6 +27,7 @@ class UAR extends Model
         'next_due',
         'organization_code',
         'created_by',
+        'status',
     ];
 
     public function organization()
@@ -52,6 +58,20 @@ class UAR extends Model
     public function users()
     {
         return $this->hasMany(UARUser::class, 'uar_id');
+    }
+    public function isPending()
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isPrimaryReview()
+    {
+        return $this->status === self::STATUS_PRIMARY_REVIEW;
+    }
+
+    public function isCompleted()
+    {
+        return $this->status === self::STATUS_COMPLETED;
     }
 
 }

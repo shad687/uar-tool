@@ -20,6 +20,7 @@ class UARFileController extends Controller
     {
         \Log::info('Starting upload process for UAR ID: ' . $id);
 
+
         $request->validate([
             'user_list' => 'required|file|mimes:csv,xlsx',
             'screenshot' => 'required|file|mimes:pdf,jpg,jpeg,png,docx'
@@ -86,6 +87,9 @@ class UARFileController extends Controller
 
             UARUser::where('uar_id', $id)->delete(); // Clear existing user data for this UAR ID
             UARUser::insert($rows);
+            $uar = UAR::find($id);
+            $uar->status = 'primary_review';
+            $uar->save();
             \Log::info('User data inserted into UARUser table.');
 
         } catch (\Exception $e) {
@@ -96,56 +100,7 @@ class UARFileController extends Controller
         \Log::info('Upload process completed successfully for UAR ID: ' . $id);
         return redirect()->route('dashboard')->with('success', 'Files uploaded and users stored successfully!');
     }
-   
-/*    {
-        $request->validate([
-            'user_list' => 'required|file|mimes:csv,xlsx',
-            'screenshot' => 'required|file|mimes:pdf,jpg,jpeg,png,docx'
-        ]);
 
-        $userList = $request->file('user_list')->store('uploads/user_lists', 'public');
-        $screenshot = $request->file('screenshot')->store('uploads/screenshots', 'public');
-
-        UARFile::create([
-            'uar_id' => $id,
-            'user_list' => $userList,
-            'screenshot' => $screenshot,
-        ]);
-
-        // Parse the uploaded Excel/CSV file and store user data
-        $filePath = storage_path('app/public/uploads/user_lists/' . basename($userList));
-
-        try {
-            $spreadsheet = IOFactory::load($filePath);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = [];
-
-            foreach ($worksheet->getRowIterator() as $rowIndex => $row) {
-                if ($rowIndex === 1)
-                    continue; // Skip header row
-
-                $cells = [];
-                foreach ($row->getCellIterator() as $cell) {
-                    $cells[] = $cell->getValue();
-                }
-
-                $rows[] = [
-                    'uar_id' => $id,
-                    'user_data' => json_encode($cells),
-                    'primary_review_status' => 'pending',
-                    'secondary_review_status' => 'pending',
-                ];
-            }
-
-            UARUser::insert($rows);
-
-        } catch (\Exception $e) {
-            \Log::error('Error processing file: ' . $e->getMessage());
-            return back()->with('error', 'Error processing file: ' . $e->getMessage());
-        }
-
-        return redirect()->route('dashboard')->with('success', 'Files uploaded and users stored successfully!');
-    } */
 
     public function showUploadForm($id)
     {

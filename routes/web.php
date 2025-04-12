@@ -6,6 +6,7 @@ use App\Http\Controllers\UARController;
 use App\Http\Controllers\UARFileController;
 use App\Models\UAR;
 use App\Http\Controllers\UARUserController;
+use App\Http\Controllers\AdminUserController;
 
 
 Route::get('/', function () {
@@ -34,5 +35,10 @@ Route::get('/uar/{id}/review', [UARUserController::class, 'show'])->name('uar.re
 Route::post('/uar/user/{id}/approve', [UARUserController::class, 'approve'])->name('uar.approve');
 Route::post('/uar/user/{id}/reject', [UARUserController::class, 'reject'])->name('uar.reject');
 Route::post('/uar/user/{id}/approveall', [UARUserController::class, 'approveAll'])->name('uar.approveAll');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/users/manage', [AdminUserController::class, 'index'])->name('users.manage');
+    Route::post('/users/{user}/toggle-admin', [AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+});
 
 require __DIR__.'/auth.php';

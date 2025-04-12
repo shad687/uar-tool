@@ -51,4 +51,18 @@ class User extends Authenticatable
 {
     return $this->is_admin;
 }
+public function uarsAsOwner()
+{
+    return $this->hasMany(UAR::class, 'app_owner_id');
+}
+
+public function uarsAsPrimary()
+{
+    return $this->hasMany(UAR::class, 'primary_reviewer_id');
+}
+
+public function uarsAsSecondary()
+{
+    return $this->hasMany(UAR::class, 'secondary_reviewer_id');
+}
 }
